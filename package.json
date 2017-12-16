@@ -1,0 +1,27 @@
+{
+  "name": "parallelio-timing",
+  "version": "1.0.0",
+  "description": "Timing helper class",
+  "main": "dist/timing.js",
+  "scripts": {
+    "test": "gulp test",
+    "build": "gulp build"
+  },
+  "author": "kevthunder",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "gulp": "^3.9.1",
+    "gulp-coffee": "^2.3.3",
+    "gulp-coffeescript-concat": "^0.1.3",
+    "gulp-mocha": "^4.3.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-shell": "^0.6.3",
+    "gulp-uglify": "^2.0.1",
+    "mocha": "^3.2.0",
+    "spark-wrapper": "kevthunder/spark-wrapper#dev"
+  },
+  "dependencies": {
+    "spark-starter": "kevthunder/spark-starter#v0.3"
+  }
+}

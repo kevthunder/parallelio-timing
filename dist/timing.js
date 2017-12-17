@@ -173,6 +173,11 @@ Timing.Timer = (function() {
   };
 
   Timer.prototype.destroy = function() {
+    if (this.repeat) {
+      clearInterval(this.id);
+    } else {
+      clearTimeout(this.id);
+    }
     this.updater.destroy();
     this.dispatcher.destroy();
     this.running = false;

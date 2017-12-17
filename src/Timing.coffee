@@ -1,5 +1,5 @@
 
-
+BaseUpdater = require('spark-starter').Updater
 
 class Timing
   constructor: (@running = true) ->
@@ -7,6 +7,8 @@ class Timing
 
   addChild: (child) ->
     index = @children.indexOf(child)
+    if @updater
+      child.updater.dispatcher = @updater
     if index == -1
       @children.push(child)
     child.parent = this
@@ -44,11 +46,13 @@ class Timing
     @toggle(true)
 
 
-
-
 class Timing.Timer
-  constructor: (@time,@callback,@running=true,@repeat=false) ->
+  constructor: (@time,callback,@running=true,@repeat=false) ->
     @remainingTime = @time
+    @updater = new Timing.Updater(this)
+    @dispatcher = new BaseUpdater()
+    if callback
+      @dispatcher.addCallback(callback)
     if @running
       @_start()
   @now = ->
@@ -58,6 +62,7 @@ class Timing.Timer
       process.uptime() * 1000
     else
       Date.now()
+
   toggle: (val)->
     if typeof val == "undefined"
       val = !@running
@@ -78,6 +83,7 @@ class Timing.Timer
     @getElapsedTime()/@time
   _start: ->
     @running = true
+    @updater.forwardCallbacks()
     @startTime = @constructor.now()
     if @repeat and !@interupted
       @id = setInterval(@tick.bind(this),@remainingTime)
@@ -86,6 +92,7 @@ class Timing.Timer
   _stop: ->
     wasInterupted = @interupted
     @running = false
+    @updater.unforwardCallbacks()
     @remainingTime = @time - (@constructor.now() - @startTime)
     @interupted = @remainingTime != @time
     if @repeat and !wasInterupted
@@ -99,8 +106,7 @@ class Timing.Timer
       @remainingTime = @time
     else
       @remainingTime = 0
-    if @callback?
-      @callback()
+    @dispatcher.update()
     if @repeat
       if wasInterupted
         @_start()
@@ -109,6 +115,48 @@ class Timing.Timer
     else
       @destroy()
   destroy:->
+    @updater.destroy()
+    @dispatcher.destroy()
     @running = false
     if @parent
       @parent.removeChild(this)
+
+
+class Timing.Updater
+  constructor: (@parent) ->
+    @dispatcher = new BaseUpdater()
+    @callbacks = []
+
+  addCallback: (callback)->
+    unless @callbacks.includes(callback)
+      @callbacks.push(callback)
+    if @parent.running && @dispatcher
+      @dispatcher.addCallback(callback)
+        
+  removeCallback: (callback)->
+    index = @callbacks.indexOf(callback)
+    if index != -1
+      @callbacks.splice(index,1)
+    if @dispatcher
+      @dispatcher.removeCallback(callback)
+
+  getBinder: ->
+    if @dispatcher
+      new BaseUpdater.Binder(this)
+
+  forwardCallbacks: ()->
+    if @dispatcher
+      @callbacks.forEach (callback)=>
+        @dispatcher.addCallback(callback)
+
+  unforwardCallbacks: ()->
+    if @dispatcher
+      @callbacks.forEach (callback)=>
+        @dispatcher.removeCallback(callback)
+
+  destroy:->
+    @unforwardCallbacks()
+    @callbacks = []
+    @parent = null
+
+

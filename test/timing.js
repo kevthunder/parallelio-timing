@@ -5,6 +5,8 @@
 
   Timing = require('../dist/timing');
 
+  Timing = require('../dist/timing');
+
   describe('Timing.Timer', function() {
     it('trigger a callback after a time', function(done) {
       var callback, calls, timer;
@@ -32,6 +34,25 @@
         timer.destroy();
         return done();
       }, 500);
+    });
+    it('trigger multiple callbacks', function(done) {
+      var callback, callback2, calls, calls2, timer;
+      calls = 0;
+      callback = function() {
+        return calls++;
+      };
+      calls2 = 0;
+      callback2 = function() {
+        return calls2++;
+      };
+      timer = new Timing.Timer(200, callback);
+      timer.dispatcher.addCallback(callback2);
+      return setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 1);
+        assert.equal(calls2, 1);
+        return done();
+      }, 300);
     });
     it('can pause', function(done) {
       var callback, calls, timer;
@@ -78,7 +99,7 @@
         return done();
       }, 300);
     });
-    return it('can get prc done', function(done) {
+    it('can get prc done', function(done) {
       var callback, calls, timer;
       calls = 0;
       callback = function() {
@@ -92,6 +113,30 @@
       return setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 1);
+        return done();
+      }, 300);
+    });
+    return it('can send update events', function(done) {
+      var callback, calls, calls2, timer, update;
+      calls = 0;
+      callback = function() {
+        return calls++;
+      };
+      calls2 = 0;
+      update = function() {
+        calls2++;
+        assert.isAbove(timer.getPrc(), 0.3);
+        return assert.isBelow(timer.getPrc(), 0.7);
+      };
+      timer = new Timing.Timer(200, callback);
+      timer.updater.addCallback(update);
+      setTimeout(function() {
+        return timer.updater.dispatcher.update();
+      }, 100);
+      return setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 1);
+        assert.equal(calls2, 1);
         return done();
       }, 300);
     });

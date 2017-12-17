@@ -1,5 +1,6 @@
 assert = require('chai').assert
 Timing = require('../dist/timing')
+Timing = require('../dist/timing')
 
 
 describe 'Timing.Timer', ->
@@ -24,6 +25,22 @@ describe 'Timing.Timer', ->
       timer.destroy()
       done()
     ,500
+  it 'trigger multiple callbacks', (done)->
+    calls = 0
+    callback = ->
+      calls++
+    calls2 = 0
+    callback2 = ->
+      calls2++
+    timer = new Timing.Timer(200,callback)
+    timer.dispatcher.addCallback(callback2)
+    setTimeout ->
+      assert.isFalse timer.running
+      assert.equal calls, 1
+      assert.equal calls2, 1
+      done()
+    ,300
+
   it 'can pause', (done)->
     calls = 0
     callback = ->
@@ -75,6 +92,26 @@ describe 'Timing.Timer', ->
     setTimeout ->
       assert.isFalse timer.running
       assert.equal calls, 1
+      done()
+    ,300
+  it 'can send update events', (done)->
+    calls = 0
+    callback = ->
+      calls++
+    calls2 = 0
+    update = ->
+      calls2++
+      assert.isAbove timer.getPrc(), 0.3
+      assert.isBelow timer.getPrc(), 0.7
+    timer = new Timing.Timer(200,callback)
+    timer.updater.addCallback(update)
+    setTimeout ->
+      timer.updater.dispatcher.update()
+    ,100
+    setTimeout ->
+      assert.isFalse timer.running
+      assert.equal calls, 1
+      assert.equal calls2, 1
       done()
     ,300
 

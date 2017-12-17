@@ -115,6 +115,10 @@ class Timing.Timer
     else
       @destroy()
   destroy:->
+    if @repeat
+      clearInterval(@id)
+    else
+      clearTimeout(@id)
     @updater.destroy()
     @dispatcher.destroy()
     @running = false

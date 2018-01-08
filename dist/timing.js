@@ -116,14 +116,24 @@ Timing.Timer = (function() {
 
   Timer.prototype.getElapsedTime = function() {
     if (this.running) {
-      return this.constructor.now() - this.startTime;
+      return this.constructor.now() - this.startTime + this.time - this.remainingTime;
     } else {
       return this.time - this.remainingTime;
     }
   };
 
+  Timer.prototype.setElapsedTime = function(val) {
+    this._stop();
+    this.remainingTime = this.time - val;
+    return this._start();
+  };
+
   Timer.prototype.getPrc = function() {
     return this.getElapsedTime() / this.time;
+  };
+
+  Timer.prototype.setPrc = function(val) {
+    return this.setElapsedTime(this.time * val);
   };
 
   Timer.prototype._start = function() {

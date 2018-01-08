@@ -76,11 +76,17 @@ class Timing.Timer
     @toggle(true)
   getElapsedTime: ->
     if @running
-      @constructor.now() - @startTime
+      @constructor.now() - @startTime + @time - @remainingTime
     else
       @time - @remainingTime
+  setElapsedTime: (val)->
+    @_stop()
+    @remainingTime = @time - val
+    @_start()
   getPrc: ->
     @getElapsedTime()/@time
+  setPrc: (val)->
+    @setElapsedTime(@time*val)
   _start: ->
     @running = true
     @updater.forwardCallbacks()

@@ -80,6 +80,61 @@ describe 'Timing.Timer', ->
       assert.equal calls, 1
       done()
     ,300
+
+  it 'can get elapsed time with pause', (done)->
+    calls = 0
+    callback = ->
+      calls++
+    timer = new Timing.Timer(200,callback)
+    mesures = [];
+    setTimeout ->
+      assert.equal calls, 0
+      assert.isTrue timer.running
+      mesures.push(timer.getElapsedTime())
+      assert.isAbove mesures[mesures.length-1], 75
+      assert.isBelow mesures[mesures.length-1], 125
+      timer.pause()
+      assert.isFalse timer.running
+    ,100
+    setTimeout ->
+      assert.isFalse timer.running
+      assert.equal calls, 0
+      timer.unpause()
+      mesures.push(timer.getElapsedTime())
+      assert.equal mesures[mesures.length-1], mesures[mesures.length-2]
+    ,300
+    setTimeout ->
+      mesures.push(timer.getElapsedTime())
+      assert.isAbove mesures[mesures.length-1], 125
+      assert.isBelow mesures[mesures.length-1], 175
+      assert.isAbove mesures[mesures.length-1], mesures[mesures.length-2]
+      assert.isTrue timer.running
+      assert.equal calls, 0
+    ,350
+    setTimeout ->
+      assert.isFalse timer.running
+      assert.equal calls, 1
+      done()
+    ,600
+  it 'can set elapsed time', (done)->
+    calls = 0
+    callback = ->
+      calls++
+    timer = new Timing.Timer(200,callback)
+    setTimeout ->
+      timer.setElapsedTime(0)
+      assert.equal calls, 0
+      assert.isTrue timer.running
+    ,100
+    setTimeout ->
+      assert.equal calls, 0
+      assert.isTrue timer.running
+    ,250
+    setTimeout ->
+      assert.isFalse timer.running
+      assert.equal calls, 1
+      done()
+    ,350
   it 'can get prc done', (done)->
     calls = 0
     callback = ->

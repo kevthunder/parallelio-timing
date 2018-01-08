@@ -99,6 +99,66 @@
         return done();
       }, 300);
     });
+    it('can get elapsed time with pause', function(done) {
+      var callback, calls, mesures, timer;
+      calls = 0;
+      callback = function() {
+        return calls++;
+      };
+      timer = new Timing.Timer(200, callback);
+      mesures = [];
+      setTimeout(function() {
+        assert.equal(calls, 0);
+        assert.isTrue(timer.running);
+        mesures.push(timer.getElapsedTime());
+        assert.isAbove(mesures[mesures.length - 1], 75);
+        assert.isBelow(mesures[mesures.length - 1], 125);
+        timer.pause();
+        return assert.isFalse(timer.running);
+      }, 100);
+      setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 0);
+        timer.unpause();
+        mesures.push(timer.getElapsedTime());
+        return assert.equal(mesures[mesures.length - 1], mesures[mesures.length - 2]);
+      }, 300);
+      setTimeout(function() {
+        mesures.push(timer.getElapsedTime());
+        assert.isAbove(mesures[mesures.length - 1], 125);
+        assert.isBelow(mesures[mesures.length - 1], 175);
+        assert.isAbove(mesures[mesures.length - 1], mesures[mesures.length - 2]);
+        assert.isTrue(timer.running);
+        return assert.equal(calls, 0);
+      }, 350);
+      return setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 1);
+        return done();
+      }, 600);
+    });
+    it('can set elapsed time', function(done) {
+      var callback, calls, timer;
+      calls = 0;
+      callback = function() {
+        return calls++;
+      };
+      timer = new Timing.Timer(200, callback);
+      setTimeout(function() {
+        timer.setElapsedTime(0);
+        assert.equal(calls, 0);
+        return assert.isTrue(timer.running);
+      }, 100);
+      setTimeout(function() {
+        assert.equal(calls, 0);
+        return assert.isTrue(timer.running);
+      }, 250);
+      return setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 1);
+        return done();
+      }, 350);
+    });
     it('can get prc done', function(done) {
       var callback, calls, timer;
       calls = 0;

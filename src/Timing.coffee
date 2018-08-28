@@ -140,7 +140,7 @@ class Timing.Updater
   addCallback: (callback)->
     unless @callbacks.includes(callback)
       @callbacks.push(callback)
-    if @parent.running && @dispatcher
+    if @parent?.running && @dispatcher
       @dispatcher.addCallback(callback)
         
   removeCallback: (callback)->

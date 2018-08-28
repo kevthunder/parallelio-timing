@@ -1,6 +1,6 @@
 {
   "name": "parallelio-timing",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "Timing helper class",
   "main": "dist/timing.js",
   "scripts": {

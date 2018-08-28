@@ -208,10 +208,11 @@ Timing.Updater = (function() {
   }
 
   Updater.prototype.addCallback = function(callback) {
+    var ref;
     if (!this.callbacks.includes(callback)) {
       this.callbacks.push(callback);
     }
-    if (this.parent.running && this.dispatcher) {
+    if (((ref = this.parent) != null ? ref.running : void 0) && this.dispatcher) {
       return this.dispatcher.addCallback(callback);
     }
   };

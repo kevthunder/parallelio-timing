@@ -1,13 +1,13 @@
-(function(definition){Timing=definition(typeof(Parallelio)!=="undefined"?Parallelio:this.Parallelio);Timing.definition=definition;if(typeof(module)!=="undefined"&&module!==null){module.exports=Timing;}else{if(typeof(Parallelio)!=="undefined"&&Parallelio!==null){Parallelio.Timing=Timing;}else{if(this.Parallelio==null){this.Parallelio={};}this.Parallelio.Timing=Timing;}}})(function(dependencies){if(dependencies==null){dependencies={};}
+(function(definition){var Timing=definition(typeof Parallelio!=="undefined"?Parallelio:this.Parallelio);Timing.definition=definition;if(typeof module!=="undefined"&&module!==null){module.exports=Timing;}else{if(typeof Parallelio!=="undefined"&&Parallelio!==null){Parallelio.Timing=Timing;}else{if(this.Parallelio==null){this.Parallelio={};}this.Parallelio.Timing=Timing;}}})(function(dependencies){if(dependencies==null){dependencies={};}
 var BaseUpdater = dependencies.hasOwnProperty("BaseUpdater") ? dependencies.BaseUpdater : require('spark-starter').Updater;
 var Timing;
-Timing = (function() {
-  function Timing(running) {
-    this.running = running != null ? running : true;
+Timing = class Timing {
+  constructor(running = true) {
+    this.running = running;
     this.children = [];
   }
 
-  Timing.prototype.addChild = function(child) {
+  addChild(child) {
     var index;
     index = this.children.indexOf(child);
     if (this.updater) {
@@ -18,9 +18,9 @@ Timing = (function() {
     }
     child.parent = this;
     return this;
-  };
+  }
 
-  Timing.prototype.removeChild = function(child) {
+  removeChild(child) {
     var index;
     index = this.children.indexOf(child);
     if (index > -1) {
@@ -30,9 +30,9 @@ Timing = (function() {
       child.parent = null;
     }
     return this;
-  };
+  }
 
-  Timing.prototype.toggle = function(val) {
+  toggle(val) {
     if (typeof val === "undefined") {
       val = !this.running;
     }
@@ -40,39 +40,37 @@ Timing = (function() {
     return this.children.forEach(function(child) {
       return child.toggle(val);
     });
-  };
+  }
 
-  Timing.prototype.setTimeout = function(callback, time) {
+  setTimeout(callback, time) {
     var timer;
     timer = new this.constructor.Timer(time, callback, this.running);
     this.addChild(timer);
     return timer;
-  };
+  }
 
-  Timing.prototype.setInterval = function(callback, time) {
+  setInterval(callback, time) {
     var timer;
     timer = new this.constructor.Timer(time, callback, this.running, true);
     this.addChild(timer);
     return timer;
-  };
+  }
 
-  Timing.prototype.pause = function() {
+  pause() {
     return this.toggle(false);
-  };
+  }
 
-  Timing.prototype.unpause = function() {
+  unpause() {
     return this.toggle(true);
-  };
+  }
 
-  return Timing;
+};
 
-})();
-
-Timing.Timer = (function() {
-  function Timer(time1, callback, running, repeat) {
+Timing.Timer = class Timer {
+  constructor(time1, callback, running = true, repeat = false) {
     this.time = time1;
-    this.running = running != null ? running : true;
-    this.repeat = repeat != null ? repeat : false;
+    this.running = running;
+    this.repeat = repeat;
     this.remainingTime = this.time;
     this.updater = new Timing.Updater(this);
     this.dispatcher = new BaseUpdater();
@@ -84,7 +82,7 @@ Timing.Timer = (function() {
     }
   }
 
-  Timer.now = function() {
+  static now() {
     var ref;
     if ((typeof window !== "undefined" && window !== null ? (ref = window.performance) != null ? ref.now : void 0 : void 0) != null) {
       return window.performance.now();
@@ -93,9 +91,9 @@ Timing.Timer = (function() {
     } else {
       return Date.now();
     }
-  };
+  }
 
-  Timer.prototype.toggle = function(val) {
+  toggle(val) {
     if (typeof val === "undefined") {
       val = !this.running;
     }
@@ -104,39 +102,39 @@ Timing.Timer = (function() {
     } else {
       return this._stop();
     }
-  };
+  }
 
-  Timer.prototype.pause = function() {
+  pause() {
     return this.toggle(false);
-  };
+  }
 
-  Timer.prototype.unpause = function() {
+  unpause() {
     return this.toggle(true);
-  };
+  }
 
-  Timer.prototype.getElapsedTime = function() {
+  getElapsedTime() {
     if (this.running) {
       return this.constructor.now() - this.startTime + this.time - this.remainingTime;
     } else {
       return this.time - this.remainingTime;
     }
-  };
+  }
 
-  Timer.prototype.setElapsedTime = function(val) {
+  setElapsedTime(val) {
     this._stop();
     this.remainingTime = this.time - val;
     return this._start();
-  };
+  }
 
-  Timer.prototype.getPrc = function() {
+  getPrc() {
     return this.getElapsedTime() / this.time;
-  };
+  }
 
-  Timer.prototype.setPrc = function(val) {
+  setPrc(val) {
     return this.setElapsedTime(this.time * val);
-  };
+  }
 
-  Timer.prototype._start = function() {
+  _start() {
     this.running = true;
     this.updater.forwardCallbacks();
     this.startTime = this.constructor.now();
@@ -145,9 +143,9 @@ Timing.Timer = (function() {
     } else {
       return this.id = setTimeout(this.tick.bind(this), this.remainingTime);
     }
-  };
+  }
 
-  Timer.prototype._stop = function() {
+  _stop() {
     var wasInterupted;
     wasInterupted = this.interupted;
     this.running = false;
@@ -159,9 +157,9 @@ Timing.Timer = (function() {
     } else {
       return clearTimeout(this.id);
     }
-  };
+  }
 
-  Timer.prototype.tick = function() {
+  tick() {
     var wasInterupted;
     wasInterupted = this.interupted;
     this.interupted = false;
@@ -180,9 +178,9 @@ Timing.Timer = (function() {
     } else {
       return this.destroy();
     }
-  };
+  }
 
-  Timer.prototype.destroy = function() {
+  destroy() {
     if (this.repeat) {
       clearInterval(this.id);
     } else {
@@ -194,20 +192,18 @@ Timing.Timer = (function() {
     if (this.parent) {
       return this.parent.removeChild(this);
     }
-  };
+  }
 
-  return Timer;
+};
 
-})();
-
-Timing.Updater = (function() {
-  function Updater(parent) {
+Timing.Updater = class Updater {
+  constructor(parent) {
     this.parent = parent;
     this.dispatcher = new BaseUpdater();
     this.callbacks = [];
   }
 
-  Updater.prototype.addCallback = function(callback) {
+  addCallback(callback) {
     var ref;
     if (!this.callbacks.includes(callback)) {
       this.callbacks.push(callback);
@@ -215,9 +211,9 @@ Timing.Updater = (function() {
     if (((ref = this.parent) != null ? ref.running : void 0) && this.dispatcher) {
       return this.dispatcher.addCallback(callback);
     }
-  };
+  }
 
-  Updater.prototype.removeCallback = function(callback) {
+  removeCallback(callback) {
     var index;
     index = this.callbacks.indexOf(callback);
     if (index !== -1) {
@@ -226,42 +222,36 @@ Timing.Updater = (function() {
     if (this.dispatcher) {
       return this.dispatcher.removeCallback(callback);
     }
-  };
+  }
 
-  Updater.prototype.getBinder = function() {
+  getBinder() {
     if (this.dispatcher) {
       return new BaseUpdater.Binder(this);
     }
-  };
+  }
 
-  Updater.prototype.forwardCallbacks = function() {
+  forwardCallbacks() {
     if (this.dispatcher) {
-      return this.callbacks.forEach((function(_this) {
-        return function(callback) {
-          return _this.dispatcher.addCallback(callback);
-        };
-      })(this));
+      return this.callbacks.forEach((callback) => {
+        return this.dispatcher.addCallback(callback);
+      });
     }
-  };
+  }
 
-  Updater.prototype.unforwardCallbacks = function() {
+  unforwardCallbacks() {
     if (this.dispatcher) {
-      return this.callbacks.forEach((function(_this) {
-        return function(callback) {
-          return _this.dispatcher.removeCallback(callback);
-        };
-      })(this));
+      return this.callbacks.forEach((callback) => {
+        return this.dispatcher.removeCallback(callback);
+      });
     }
-  };
+  }
 
-  Updater.prototype.destroy = function() {
+  destroy() {
     this.unforwardCallbacks();
     this.callbacks = [];
     return this.parent = null;
-  };
+  }
 
-  return Updater;
-
-})();
+};
 
 return(Timing);});

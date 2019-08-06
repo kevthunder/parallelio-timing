@@ -20,6 +20,6 @@
     "spark-wrapper": "kevthunder/spark-wrapper"
   },
   "dependencies": {
-    "spark-starter": "kevthunder/spark-starter#v0.8.x"
+    "spark-starter": "kevthunder/spark-starter#v0.10.x"
   }
 }

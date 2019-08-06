@@ -1,11 +1,11 @@
 (function() {
-  var Timing, assert;
+  var PropertyWatcher, Timing, assert;
 
   assert = require('chai').assert;
 
   Timing = require('../dist/timing');
 
-  Timing = require('../dist/timing');
+  PropertyWatcher = require('spark-starter').Invalidated.PropertyWatcher;
 
   describe('Timing.Timer', function() {
     it('trigger a callback after a time', function(done) {
@@ -14,10 +14,14 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
       return setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 1);
+        assert.equal(timer.repetition, 1);
         return done();
       }, 300);
     });
@@ -27,10 +31,15 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback, true, true);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback,
+        repeat: true
+      });
       return setTimeout(function() {
         assert.isTrue(timer.running);
         assert.equal(calls, 2);
+        assert.equal(timer.repetition, 2);
         timer.destroy();
         return done();
       }, 500);
@@ -45,8 +54,11 @@
       callback2 = function() {
         return calls2++;
       };
-      timer = new Timing.Timer(200, callback);
-      timer.dispatcher.addCallback(callback2);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
+      timer.getPropertyInstance('repetition').on('changed', callback2);
       return setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 1);
@@ -60,7 +72,10 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
       setTimeout(function() {
         assert.equal(calls, 0);
         assert.isTrue(timer.running);
@@ -88,16 +103,23 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback);
+      timer = new Timing.Timer({
+        time: 300,
+        callback: callback
+      });
       setTimeout(function() {
-        assert.isAbove(timer.getElapsedTime(), 50);
-        return assert.isBelow(timer.getElapsedTime(), 150);
+        assert.isAbove(timer.getElapsedTime(), 80);
+        return assert.isBelow(timer.getElapsedTime(), 120);
       }, 100);
+      setTimeout(function() {
+        assert.isAbove(timer.getElapsedTime(), 180);
+        return assert.isBelow(timer.getElapsedTime(), 220);
+      }, 200);
       return setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 1);
         return done();
-      }, 300);
+      }, 400);
     });
     it('can get elapsed time with pause', function(done) {
       var callback, calls, mesures, timer;
@@ -105,23 +127,26 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
       mesures = [];
       setTimeout(function() {
         assert.equal(calls, 0);
         assert.isTrue(timer.running);
-        mesures.push(timer.getElapsedTime());
-        assert.isAbove(mesures[mesures.length - 1], 75);
-        assert.isBelow(mesures[mesures.length - 1], 125);
+        assert.isAbove(timer.getElapsedTime(), 75);
+        assert.isBelow(timer.getElapsedTime(), 125);
         timer.pause();
+        mesures.push(timer.getElapsedTime());
         return assert.isFalse(timer.running);
       }, 100);
       setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 0);
-        timer.unpause();
         mesures.push(timer.getElapsedTime());
-        return assert.equal(mesures[mesures.length - 1], mesures[mesures.length - 2]);
+        assert.equal(mesures[mesures.length - 1], mesures[mesures.length - 2]);
+        return timer.unpause();
       }, 300);
       setTimeout(function() {
         mesures.push(timer.getElapsedTime());
@@ -143,7 +168,10 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
       setTimeout(function() {
         timer.setElapsedTime(0);
         assert.equal(calls, 0);
@@ -165,7 +193,10 @@
       callback = function() {
         return calls++;
       };
-      timer = new Timing.Timer(200, callback);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
       setTimeout(function() {
         assert.isAbove(timer.getPrc(), 0.3);
         return assert.isBelow(timer.getPrc(), 0.7);
@@ -176,7 +207,7 @@
         return done();
       }, 300);
     });
-    return it('can send update events', function(done) {
+    it('can send update events', function(done) {
       var callback, calls, calls2, timer, update;
       calls = 0;
       callback = function() {
@@ -184,21 +215,70 @@
       };
       calls2 = 0;
       update = function() {
-        calls2++;
-        assert.isAbove(timer.getPrc(), 0.3);
-        return assert.isBelow(timer.getPrc(), 0.7);
+        return calls2++;
       };
-      timer = new Timing.Timer(200, callback);
-      timer.updater.addCallback(update);
-      setTimeout(function() {
-        return timer.updater.dispatcher.update();
-      }, 100);
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
+      (new PropertyWatcher({
+        scope: timer,
+        property: 'elapsedTime',
+        callback: update
+      })).bind();
       return setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 1);
-        assert.equal(calls2, 1);
+        assert.isAbove(calls2, 10);
         return done();
       }, 300);
+    });
+    return it('stop sending update events while paused', function(done) {
+      var callback, calls, calls2, mesures, timer, update;
+      calls = 0;
+      callback = function() {
+        return calls++;
+      };
+      calls2 = 0;
+      update = function() {
+        return calls2++;
+      };
+      timer = new Timing.Timer({
+        time: 200,
+        callback: callback
+      });
+      (new PropertyWatcher({
+        scope: timer,
+        property: 'elapsedTime',
+        callback: update
+      })).bind();
+      mesures = [];
+      setTimeout(function() {
+        assert.equal(calls, 0);
+        assert.isAbove(calls2, 10);
+        assert.isTrue(timer.running);
+        timer.pause();
+        mesures.push(calls2);
+        return assert.isFalse(timer.running);
+      }, 100);
+      setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 0);
+        mesures.push(calls2);
+        assert.equal(mesures[mesures.length - 1], mesures[mesures.length - 2]);
+        return timer.unpause();
+      }, 300);
+      setTimeout(function() {
+        mesures.push(calls2);
+        assert.isAbove(mesures[mesures.length - 1], mesures[mesures.length - 2]);
+        assert.isTrue(timer.running);
+        return assert.equal(calls, 0);
+      }, 350);
+      return setTimeout(function() {
+        assert.isFalse(timer.running);
+        assert.equal(calls, 1);
+        return done();
+      }, 600);
     });
   });
 
@@ -223,7 +303,9 @@
       callback = function() {
         return calls++;
       };
-      timing = new Timing(false);
+      timing = new Timing({
+        running: false
+      });
       timer = timing.setTimeout(callback, 200);
       return setTimeout(function() {
         assert.isFalse(timer.running);

@@ -207,6 +207,16 @@
         return done();
       }, 300);
     });
+    it('can get prc done when not running', function() {
+      var timer;
+      timer = new Timing.Timer({
+        timing: {
+          running: false
+        }
+      });
+      assert.equal(timer.elapsedTime, 0);
+      return assert.equal(timer.prc, 0);
+    });
     it('can send update events', function(done) {
       var callback, calls, calls2, timer, update;
       calls = 0;

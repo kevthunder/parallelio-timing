@@ -134,10 +134,10 @@ Timing.Timer = (function() {
       calcul: function(invalidator) {
         return !invalidator.prop('paused') && invalidator.propPath('timing.running') !== false;
       },
-      change: function() {
+      change: function(old) {
         if (this.running) {
           return this.start();
-        } else {
+        } else if (old) {
           return this.stop();
         }
       }

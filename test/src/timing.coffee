@@ -158,6 +158,12 @@ describe 'Timing.Timer', ->
       done()
     ,300
 
+  it 'can get prc done when not running', ->
+    timer = new Timing.Timer(timing:{running:false})
+    assert.equal timer.elapsedTime, 0
+    assert.equal timer.prc, 0
+
+
   it 'can send update events', (done)->
     calls = 0
     callback = ->

@@ -33,10 +33,10 @@ class Timing.Timer extends Element
     running:
       calcul: (invalidator)->
         !invalidator.prop('paused') and invalidator.propPath('timing.running') != false
-      change: ->
+      change: (old)->
         if @running
           @start()
-        else
+        else if old
           @stop()
     timing:
       default: null

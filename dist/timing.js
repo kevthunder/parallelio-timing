@@ -157,9 +157,17 @@ Timing.Timer = (function() {
         }
       },
       set: function(val) {
-        this.stop();
+        var running;
+        running = this.running;
+        if (running) {
+          this.stop();
+        }
         this.remainingTime = this.time - val;
-        return this.start();
+        if (running) {
+          return this.start();
+        } else {
+          return this.invalidateElapsedTime();
+        }
       }
     },
     prc: {

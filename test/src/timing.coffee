@@ -163,6 +163,14 @@ describe 'Timing.Timer', ->
     assert.equal timer.elapsedTime, 0
     assert.equal timer.prc, 0
 
+  it 'can set prc when not running', ->
+    timer = new Timing.Timer(timing:{running:false})
+    assert.equal timer.elapsedTime, 0
+    assert.equal timer.prc, 0
+    
+    timer.prc = 0.5
+    assert.equal timer.elapsedTime, 500
+    assert.equal timer.prc, 0.5
 
   it 'can send update events', (done)->
     calls = 0

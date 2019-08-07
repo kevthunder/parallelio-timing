@@ -49,9 +49,14 @@ class Timing.Timer extends Element
         else
           @time - @remainingTime
       set: (val)->
-        @stop()
+        running = @running
+        if running
+          @stop()
         @remainingTime = @time - val
-        @start()
+        if running
+          @start()
+        else
+          @invalidateElapsedTime()
     prc:
       calcul: (invalidator)->
         invalidator.prop('elapsedTime')/@time

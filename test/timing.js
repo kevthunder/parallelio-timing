@@ -117,6 +117,7 @@
       }, 200);
       return setTimeout(function() {
         assert.isFalse(timer.running);
+        assert.equal(timer.elapsedTime, 300);
         assert.equal(calls, 1);
         return done();
       }, 400);
@@ -158,6 +159,7 @@
       }, 350);
       return setTimeout(function() {
         assert.isFalse(timer.running);
+        assert.equal(timer.elapsedTime, 200);
         assert.equal(calls, 1);
         return done();
       }, 600);
@@ -186,6 +188,23 @@
         assert.equal(calls, 1);
         return done();
       }, 350);
+    });
+    it('can set elapsed time to end', function(done) {
+      var callback, calls, timer;
+      calls = 0;
+      callback = function() {
+        return calls++;
+      };
+      timer = new Timing.Timer({
+        time: 1000,
+        callback: callback
+      });
+      return setTimeout(function() {
+        timer.setElapsedTime(1000);
+        assert.equal(timer.elapsedTime, 1000);
+        assert.equal(calls, 1);
+        return done();
+      }, 100);
     });
     it('can get prc done', function(done) {
       var callback, calls, timer;

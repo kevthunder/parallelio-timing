@@ -49,13 +49,15 @@ class Timing.Timer extends Element
         else
           @time - @remainingTime
       set: (val)->
-        running = @running
-        if running
+        if @running
           @stop()
-        @remainingTime = @time - val
-        if running
-          @start()
+          @remainingTime = @time - val
+          if @remainingTime <= 0
+            @tick()
+          else
+            @start()
         else
+          @remainingTime = @time - val
           @invalidateElapsedTime()
     prc:
       calcul: (invalidator)->

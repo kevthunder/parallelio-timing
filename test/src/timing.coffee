@@ -83,6 +83,7 @@ describe 'Timing.Timer', ->
     ,200
     setTimeout ->
       assert.isFalse timer.running
+      assert.equal timer.elapsedTime, 300
       assert.equal calls, 1
       done()
     ,400
@@ -119,6 +120,7 @@ describe 'Timing.Timer', ->
     ,350
     setTimeout ->
       assert.isFalse timer.running
+      assert.equal timer.elapsedTime, 200
       assert.equal calls, 1
       done()
     ,600
@@ -142,6 +144,18 @@ describe 'Timing.Timer', ->
       assert.equal calls, 1
       done()
     ,350
+
+  it 'can set elapsed time to end', (done)->
+    calls = 0
+    callback = ->
+      calls++
+    timer = new Timing.Timer(time:1000, callback:callback)
+    setTimeout ->
+      timer.setElapsedTime(1000)
+      assert.equal timer.elapsedTime, 1000
+      assert.equal calls, 1
+      done()
+    ,100
 
   it 'can get prc done', (done)->
     calls = 0

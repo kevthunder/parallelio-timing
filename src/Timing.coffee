@@ -32,9 +32,9 @@ class Timing.Timer extends Element
       default: false
     running:
       calcul: (invalidator)->
-        !invalidator.prop('paused') and invalidator.propPath('timing.running') != false
-      change: (old)->
-        if @running
+        !invalidator.prop(@pausedProperty) and invalidator.propPath('timing.running') != false
+      change: (val, old)->
+        if val
           @start()
         else if old
           @stop()
@@ -42,9 +42,9 @@ class Timing.Timer extends Element
       default: null
     elapsedTime:
       calcul: (invalidator)->
-        if invalidator.prop('running')
+        if invalidator.prop(@runningProperty)
           setImmediate =>
-            @invalidateElapsedTime()
+            @elapsedTimeProperty.invalidate()
           @constructor.now() - @startTime + @time - @remainingTime
         else
           @time - @remainingTime
@@ -58,12 +58,12 @@ class Timing.Timer extends Element
             @start()
         else
           @remainingTime = @time - val
-          @invalidateElapsedTime()
+          @elapsedTimeProperty.invalidate()
     prc:
       calcul: (invalidator)->
-        invalidator.prop('elapsedTime')/@time
+        invalidator.prop(@elapsedTimeProperty)/@time
       set: (val)->
-        @setElapsedTime(@time*val)
+        @elapsedTime = @time*val
     repeat:
       default: false
     repetition:

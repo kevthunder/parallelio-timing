@@ -70,6 +70,7 @@ Timing.Timer = (function() {
 
     start() {
       this.startTime = this.constructor.now();
+      console.log('repeat:', this.repeat);
       if (this.repeat) {
         return this.id = setInterval(this.tick.bind(this), this.remainingTime);
       } else {
@@ -132,10 +133,10 @@ Timing.Timer = (function() {
     },
     running: {
       calcul: function(invalidator) {
-        return !invalidator.prop('paused') && invalidator.propPath('timing.running') !== false;
+        return !invalidator.prop(this.pausedProperty) && invalidator.propPath('timing.running') !== false;
       },
-      change: function(old) {
-        if (this.running) {
+      change: function(val, old) {
+        if (val) {
           return this.start();
         } else if (old) {
           return this.stop();
@@ -147,9 +148,9 @@ Timing.Timer = (function() {
     },
     elapsedTime: {
       calcul: function(invalidator) {
-        if (invalidator.prop('running')) {
+        if (invalidator.prop(this.runningProperty)) {
           setImmediate(() => {
-            return this.invalidateElapsedTime();
+            return this.elapsedTimeProperty.invalidate();
           });
           return this.constructor.now() - this.startTime + this.time - this.remainingTime;
         } else {
@@ -167,16 +168,16 @@ Timing.Timer = (function() {
           }
         } else {
           this.remainingTime = this.time - val;
-          return this.invalidateElapsedTime();
+          return this.elapsedTimeProperty.invalidate();
         }
       }
     },
     prc: {
       calcul: function(invalidator) {
-        return invalidator.prop('elapsedTime') / this.time;
+        return invalidator.prop(this.elapsedTimeProperty) / this.time;
       },
       set: function(val) {
-        return this.setElapsedTime(this.time * val);
+        return this.elapsedTime = this.time * val;
       }
     },
     repeat: {

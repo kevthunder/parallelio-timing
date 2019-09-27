@@ -1,6 +1,6 @@
 assert = require('chai').assert
 Timing = require('../dist/timing')
-PropertyWatcher = require('spark-starter').Invalidated.PropertyWatcher
+PropertyWatcher = require('spark-starter').watchers.PropertyWatcher
 
 describe 'Timing.Timer', ->
   it 'trigger a callback after a time', (done)->
@@ -34,7 +34,7 @@ describe 'Timing.Timer', ->
     callback2 = ->
       calls2++
     timer = new Timing.Timer(time:200, callback:callback)
-    timer.getPropertyInstance('repetition').on('changed',callback2)
+    timer.repetitionProperty.events.on('changed',callback2)
     setTimeout ->
       assert.isFalse timer.running
       assert.equal calls, 1
@@ -74,12 +74,12 @@ describe 'Timing.Timer', ->
       calls++
     timer = new Timing.Timer(time:300, callback:callback)
     setTimeout ->
-      assert.isAbove timer.getElapsedTime(), 80
-      assert.isBelow timer.getElapsedTime(), 120
+      assert.isAbove timer.elapsedTime, 80
+      assert.isBelow timer.elapsedTime, 120
     ,100
     setTimeout ->
-      assert.isAbove timer.getElapsedTime(), 180
-      assert.isBelow timer.getElapsedTime(), 220
+      assert.isAbove timer.elapsedTime, 180
+      assert.isBelow timer.elapsedTime, 220
     ,200
     setTimeout ->
       assert.isFalse timer.running
@@ -97,21 +97,21 @@ describe 'Timing.Timer', ->
     setTimeout ->
       assert.equal calls, 0
       assert.isTrue timer.running
-      assert.isAbove timer.getElapsedTime(), 75
-      assert.isBelow timer.getElapsedTime(), 125
+      assert.isAbove timer.elapsedTime, 75
+      assert.isBelow timer.elapsedTime, 125
       timer.pause()
-      mesures.push(timer.getElapsedTime())
+      mesures.push(timer.elapsedTime)
       assert.isFalse timer.running
     ,100
     setTimeout ->
       assert.isFalse timer.running
       assert.equal calls, 0
-      mesures.push(timer.getElapsedTime())
+      mesures.push(timer.elapsedTime)
       assert.equal mesures[mesures.length-1], mesures[mesures.length-2]
       timer.unpause()
     ,300
     setTimeout ->
-      mesures.push(timer.getElapsedTime())
+      mesures.push(timer.elapsedTime)
       assert.isAbove mesures[mesures.length-1], 125
       assert.isBelow mesures[mesures.length-1], 175
       assert.isAbove mesures[mesures.length-1], mesures[mesures.length-2]
@@ -131,7 +131,7 @@ describe 'Timing.Timer', ->
       calls++
     timer = new Timing.Timer(time:200, callback:callback)
     setTimeout ->
-      timer.setElapsedTime(0)
+      timer.elapsedTime = 0
       assert.equal calls, 0
       assert.isTrue timer.running
     ,100
@@ -151,7 +151,7 @@ describe 'Timing.Timer', ->
       calls++
     timer = new Timing.Timer(time:1000, callback:callback)
     setTimeout ->
-      timer.setElapsedTime(1000)
+      timer.elapsedTime = 1000
       assert.equal timer.elapsedTime, 1000
       assert.equal calls, 1
       done()
@@ -163,8 +163,8 @@ describe 'Timing.Timer', ->
       calls++
     timer = new Timing.Timer(time:200, callback:callback)
     setTimeout ->
-      assert.isAbove timer.getPrc(), 0.3
-      assert.isBelow timer.getPrc(), 0.7
+      assert.isAbove timer.prc, 0.3
+      assert.isBelow timer.prc, 0.7
     ,100
     setTimeout ->
       assert.isFalse timer.running

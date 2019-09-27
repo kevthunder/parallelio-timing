@@ -5,7 +5,7 @@
 
   Timing = require('../dist/timing');
 
-  PropertyWatcher = require('spark-starter').Invalidated.PropertyWatcher;
+  PropertyWatcher = require('spark-starter').watchers.PropertyWatcher;
 
   describe('Timing.Timer', function() {
     it('trigger a callback after a time', function(done) {
@@ -58,7 +58,7 @@
         time: 200,
         callback: callback
       });
-      timer.getPropertyInstance('repetition').on('changed', callback2);
+      timer.repetitionProperty.events.on('changed', callback2);
       return setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 1);
@@ -108,12 +108,12 @@
         callback: callback
       });
       setTimeout(function() {
-        assert.isAbove(timer.getElapsedTime(), 80);
-        return assert.isBelow(timer.getElapsedTime(), 120);
+        assert.isAbove(timer.elapsedTime, 80);
+        return assert.isBelow(timer.elapsedTime, 120);
       }, 100);
       setTimeout(function() {
-        assert.isAbove(timer.getElapsedTime(), 180);
-        return assert.isBelow(timer.getElapsedTime(), 220);
+        assert.isAbove(timer.elapsedTime, 180);
+        return assert.isBelow(timer.elapsedTime, 220);
       }, 200);
       return setTimeout(function() {
         assert.isFalse(timer.running);
@@ -136,21 +136,21 @@
       setTimeout(function() {
         assert.equal(calls, 0);
         assert.isTrue(timer.running);
-        assert.isAbove(timer.getElapsedTime(), 75);
-        assert.isBelow(timer.getElapsedTime(), 125);
+        assert.isAbove(timer.elapsedTime, 75);
+        assert.isBelow(timer.elapsedTime, 125);
         timer.pause();
-        mesures.push(timer.getElapsedTime());
+        mesures.push(timer.elapsedTime);
         return assert.isFalse(timer.running);
       }, 100);
       setTimeout(function() {
         assert.isFalse(timer.running);
         assert.equal(calls, 0);
-        mesures.push(timer.getElapsedTime());
+        mesures.push(timer.elapsedTime);
         assert.equal(mesures[mesures.length - 1], mesures[mesures.length - 2]);
         return timer.unpause();
       }, 300);
       setTimeout(function() {
-        mesures.push(timer.getElapsedTime());
+        mesures.push(timer.elapsedTime);
         assert.isAbove(mesures[mesures.length - 1], 125);
         assert.isBelow(mesures[mesures.length - 1], 175);
         assert.isAbove(mesures[mesures.length - 1], mesures[mesures.length - 2]);
@@ -175,7 +175,7 @@
         callback: callback
       });
       setTimeout(function() {
-        timer.setElapsedTime(0);
+        timer.elapsedTime = 0;
         assert.equal(calls, 0);
         return assert.isTrue(timer.running);
       }, 100);
@@ -200,7 +200,7 @@
         callback: callback
       });
       return setTimeout(function() {
-        timer.setElapsedTime(1000);
+        timer.elapsedTime = 1000;
         assert.equal(timer.elapsedTime, 1000);
         assert.equal(calls, 1);
         return done();
@@ -217,8 +217,8 @@
         callback: callback
       });
       setTimeout(function() {
-        assert.isAbove(timer.getPrc(), 0.3);
-        return assert.isBelow(timer.getPrc(), 0.7);
+        assert.isAbove(timer.prc, 0.3);
+        return assert.isBelow(timer.prc, 0.7);
       }, 100);
       return setTimeout(function() {
         assert.isFalse(timer.running);

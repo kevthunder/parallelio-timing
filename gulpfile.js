@@ -36,4 +36,9 @@ gulp.task('test', gulp.series('coffee','coffeeTest', function() {
     .pipe(mocha());
 }));
 
+gulp.task('test-debug', gulp.series('coffee','coffeeTest', function() {
+  return gulp.src('./test/tests.js')
+    .pipe(mocha({"inspect-brk":true}));
+}));
+
 gulp.task('default', build);

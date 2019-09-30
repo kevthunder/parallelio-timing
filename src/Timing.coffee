@@ -64,15 +64,15 @@ class Timing.Timer extends Element
         invalidator.prop(@elapsedTimeProperty)/@time
       set: (val)->
         @elapsedTime = @time*val
+    remainingTime:
+      calcul: (invalidator)->
+        @time
     repeat:
       default: false
     repetition:
       default: 0
     callback:
       default: null
-  
-  init: ->
-    @remainingTime = @time
 
   toggle: (val)->
     if typeof val == "undefined"
@@ -124,4 +124,4 @@ class Timing.Timer extends Element
     else
       clearTimeout(@id)
     @running = false
-    @destroyProperties()
+    @propertiesManager.destroy()

@@ -49,10 +49,6 @@ Timing = (function() {
 
 Timing.Timer = (function() {
   class Timer extends Element {
-    init() {
-      return this.remainingTime = this.time;
-    }
-
     toggle(val) {
       if (typeof val === "undefined") {
         val = !this.paused;
@@ -70,7 +66,6 @@ Timing.Timer = (function() {
 
     start() {
       this.startTime = this.constructor.now();
-      console.log('repeat:', this.repeat);
       if (this.repeat) {
         return this.id = setInterval(this.tick.bind(this), this.remainingTime);
       } else {
@@ -119,7 +114,7 @@ Timing.Timer = (function() {
         clearTimeout(this.id);
       }
       this.running = false;
-      return this.destroyProperties();
+      return this.propertiesManager.destroy();
     }
 
   };
@@ -178,6 +173,11 @@ Timing.Timer = (function() {
       },
       set: function(val) {
         return this.elapsedTime = this.time * val;
+      }
+    },
+    remainingTime: {
+      calcul: function(invalidator) {
+        return this.time;
       }
     },
     repeat: {

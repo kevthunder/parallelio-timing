@@ -1,6 +1,11 @@
 assert = require('chai').assert
 Timing = require('../dist/timing')
 PropertyWatcher = require('spark-starter').watchers.PropertyWatcher
+Property = require('spark-starter').Property
+
+class TimedWatcher extends PropertyWatcher
+  validContext: ->
+    true
 
 describe 'Timing.Timer', ->
   it 'trigger a callback after a time', (done)->
@@ -194,7 +199,7 @@ describe 'Timing.Timer', ->
     update = ->
       calls2++
     timer = new Timing.Timer(time:200, callback:callback)
-    (new PropertyWatcher(scope:timer,property:'elapsedTime',callback:update)).bind()
+    (new TimedWatcher(scope:timer,property:'elapsedTime',callback:update)).bind()
     setTimeout ->
       assert.isFalse timer.running
       assert.equal calls, 1
@@ -210,7 +215,7 @@ describe 'Timing.Timer', ->
     update = ->
       calls2++
     timer = new Timing.Timer(time:200, callback:callback)
-    (new PropertyWatcher(scope:timer,property:'elapsedTime',callback:update)).bind()
+    (new TimedWatcher(scope:timer,property:'elapsedTime',callback:update)).bind()
     mesures = [];
     setTimeout ->
       assert.equal calls, 0
@@ -238,6 +243,23 @@ describe 'Timing.Timer', ->
       assert.equal calls, 1
       done()
     ,600
+  
+  it 'does not immediatly trigger change option of property', (done)->
+    calls = 0
+    timer = new Timing.Timer(time:200)
+    prop = new Property({
+      calcul: (invalidator)->
+        invalidator.prop(timer.prcProperty)
+      change: (old)->
+        debugger
+        calls++
+    })
+    assert.equal calls, 1
+    setTimeout ->
+      timer.destroy()
+      assert.equal calls, 1
+      done()
+    , 100 
 
 describe 'Timing', ->
   it 'can start 1 timer', (done)->

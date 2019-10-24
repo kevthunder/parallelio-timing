@@ -145,7 +145,10 @@ Timing.Timer = (function() {
       calcul: function(invalidator) {
         if (invalidator.prop(this.runningProperty)) {
           setImmediate(() => {
-            return this.elapsedTimeProperty.invalidate();
+            return this.elapsedTimeProperty.invalidate({
+              preventImmediate: true,
+              origin: this
+            });
           });
           return this.constructor.now() - this.startTime + this.time - this.remainingTime;
         } else {

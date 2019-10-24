@@ -44,7 +44,10 @@ class Timing.Timer extends Element
       calcul: (invalidator)->
         if invalidator.prop(@runningProperty)
           setImmediate =>
-            @elapsedTimeProperty.invalidate()
+            @elapsedTimeProperty.invalidate({
+              preventImmediate:true, 
+              origin: this
+            })
           @constructor.now() - @startTime + @time - @remainingTime
         else
           @time - @remainingTime

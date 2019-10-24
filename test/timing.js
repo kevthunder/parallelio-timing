@@ -1,11 +1,20 @@
 (function() {
-  var PropertyWatcher, Timing, assert;
+  var Property, PropertyWatcher, TimedWatcher, Timing, assert;
 
   assert = require('chai').assert;
 
   Timing = require('../dist/timing');
 
   PropertyWatcher = require('spark-starter').watchers.PropertyWatcher;
+
+  Property = require('spark-starter').Property;
+
+  TimedWatcher = class TimedWatcher extends PropertyWatcher {
+    validContext() {
+      return true;
+    }
+
+  };
 
   describe('Timing.Timer', function() {
     it('trigger a callback after a time', function(done) {
@@ -263,7 +272,7 @@
         time: 200,
         callback: callback
       });
-      (new PropertyWatcher({
+      (new TimedWatcher({
         scope: timer,
         property: 'elapsedTime',
         callback: update
@@ -275,7 +284,7 @@
         return done();
       }, 300);
     });
-    return it('stop sending update events while paused', function(done) {
+    it('stop sending update events while paused', function(done) {
       var callback, calls, calls2, mesures, timer, update;
       calls = 0;
       callback = function() {
@@ -289,7 +298,7 @@
         time: 200,
         callback: callback
       });
-      (new PropertyWatcher({
+      (new TimedWatcher({
         scope: timer,
         property: 'elapsedTime',
         callback: update
@@ -321,6 +330,28 @@
         assert.equal(calls, 1);
         return done();
       }, 600);
+    });
+    return it('does not immediatly trigger change option of property', function(done) {
+      var calls, prop, timer;
+      calls = 0;
+      timer = new Timing.Timer({
+        time: 200
+      });
+      prop = new Property({
+        calcul: function(invalidator) {
+          return invalidator.prop(timer.prcProperty);
+        },
+        change: function(old) {
+          debugger;
+          return calls++;
+        }
+      });
+      assert.equal(calls, 1);
+      return setTimeout(function() {
+        timer.destroy();
+        assert.equal(calls, 1);
+        return done();
+      }, 100);
     });
   });
 

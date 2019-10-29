@@ -44,10 +44,7 @@ class Timing.Timer extends Element
       calcul: (invalidator)->
         if invalidator.prop(@runningProperty)
           setImmediate =>
-            @elapsedTimeProperty.invalidate({
-              preventImmediate:true, 
-              origin: this
-            })
+            @immediateInvalidation()
           @constructor.now() - @startTime + @time - @remainingTime
         else
           @time - @remainingTime
@@ -81,6 +78,13 @@ class Timing.Timer extends Element
     if typeof val == "undefined"
       val = !@paused
     @paused = val
+
+  immediateInvalidation: ->
+    if @running
+      @elapsedTimeProperty.invalidate({
+        preventImmediate:true, 
+        origin: this
+      })
 
   pause: ->
     @toggle(true)

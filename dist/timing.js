@@ -56,6 +56,15 @@ Timing.Timer = (function() {
       return this.paused = val;
     }
 
+    immediateInvalidation() {
+      if (this.running) {
+        return this.elapsedTimeProperty.invalidate({
+          preventImmediate: true,
+          origin: this
+        });
+      }
+    }
+
     pause() {
       return this.toggle(true);
     }
@@ -145,10 +154,7 @@ Timing.Timer = (function() {
       calcul: function(invalidator) {
         if (invalidator.prop(this.runningProperty)) {
           setImmediate(() => {
-            return this.elapsedTimeProperty.invalidate({
-              preventImmediate: true,
-              origin: this
-            });
+            return this.immediateInvalidation();
           });
           return this.constructor.now() - this.startTime + this.time - this.remainingTime;
         } else {
